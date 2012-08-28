@@ -45,6 +45,7 @@ module CapistranoUnicorn
           _cset(:app_env) { (fetch(:rails_env) rescue 'production') }
           _cset(:unicorn_env) { fetch(:app_env) }
           _cset(:unicorn_bin, "unicorn")
+          _cset(:unicorn_config_path) { "#{fetch(:current_path)}/config/unicorn.rb" }
         end
 
         #
@@ -54,7 +55,7 @@ module CapistranoUnicorn
           desc 'Start Unicorn master process'
           task :start, :roles => :app, :except => {:no_release => true} do
             logger.important("Starting...", "Unicorn")
-            run "cd #{current_path} && BUNDLE_GEMFILE=#{current_path}/Gemfile bundle exec #{unicorn_bin} -c #{config_path} -E #{app_env} -D"
+            run "cd #{current_path} && BUNDLE_GEMFILE=#{current_path}/Gemfile bundle exec #{unicorn_bin} -c #{unicorn_config_path} -E #{app_env} -D"
           end
 
           desc 'Stop Unicorn'
