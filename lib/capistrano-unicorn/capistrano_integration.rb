@@ -20,9 +20,7 @@ module CapistranoUnicorn
         # Get unicorn master process PID
         #
         def unicorn_get_pid(pid_file=unicorn_pid)
-          if remote_file_exists?(pid_file) && remote_process_exists?(pid_file)
-            capture("cat #{pid_file}")
-          end
+          "$(cat #{pid_file})" 
         end
 
         # Get unicorn master (old) process PID
@@ -35,7 +33,7 @@ module CapistranoUnicorn
         # Send a signal to unicorn master process
         #
         def unicorn_send_signal(pid, signal)
-          run "#{try_sudo} kill -s #{signal} #{pid}"
+          run "#{try_sudo} kill -s #{signal} #{pid} || echo true"
         end
 
         # Set unicorn vars
@@ -55,28 +53,8 @@ module CapistranoUnicorn
         namespace :unicorn do
           desc 'Start Unicorn master process'
           task :start, :roles => :app, :except => {:no_release => true} do
-            if remote_file_exists?(unicorn_pid)
-              if remote_process_exists?(unicorn_pid)
-                logger.important("Unicorn is already running!", "Unicorn")
-                next
-              else
-                run "rm #{unicorn_pid}"
-              end
-            end
-
-            primary_config_path = "#{current_path}/config/unicorn.rb"
-            if remote_file_exists?(primary_config_path)
-              config_path = primary_config_path
-            else
-              config_path = "#{current_path}/config/unicorn/#{unicorn_env}.rb"
-            end
-
-            if remote_file_exists?(config_path)
-              logger.important("Starting...", "Unicorn")
-              run "cd #{current_path} && BUNDLE_GEMFILE=#{current_path}/Gemfile bundle exec #{unicorn_bin} -c #{config_path} -E #{app_env} -D"
-            else
-              logger.important("Config file for \"#{unicorn_env}\" environment was not found at \"#{config_path}\"", "Unicorn")
-            end
+            logger.important("Starting...", "Unicorn")
+            run "cd #{current_path} && BUNDLE_GEMFILE=#{current_path}/Gemfile bundle exec #{unicorn_bin} -c #{config_path} -E #{app_env} -D"
           end
 
           desc 'Stop Unicorn'
