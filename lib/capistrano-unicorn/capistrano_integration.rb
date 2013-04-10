@@ -186,7 +186,7 @@ module CapistranoUnicorn
               set -x;
               if #{unicorn_is_running?}; then
                 echo "Reloading Unicorn...";
-                #{unicorn_send_signal('USR2')};
+                #{unicorn_send_signal('HUP')};
               else
                 #{start_unicorn}
               fi;
